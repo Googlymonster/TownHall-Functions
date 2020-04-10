@@ -9,3 +9,25 @@ let db = {
     }
   ]
 };
+const userDetails = {
+  credential: {
+    userId: "",
+    email: "",
+    handle: "",
+    createdAt: "",
+    imageUrl: "",
+    bio: "Hello",
+    website: "",
+    location: ""
+  },
+  likes: [
+    {
+      userHandle: "user",
+      shoutId: ""
+    },
+    {
+      userHandle: "",
+      shoutId: ""
+    }
+  ]
+};
