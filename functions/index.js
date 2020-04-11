@@ -17,6 +17,7 @@ const {
   unlikeShout,
   deleteShout
 } = require("./handlers/shouts");
+
 const {
   signUp,
   login,
@@ -83,6 +84,7 @@ exports.deleteNotificationOnUnlike = functions.firestore
         return;
       });
   });
+
 exports.createNotificationOnComment = functions.firestore
   .document("comments/{id}")
   .onCreate(snapshot => {
@@ -109,6 +111,7 @@ exports.createNotificationOnComment = functions.firestore
         return;
       });
   });
+
 exports.onUserImageChange = functions.firestore
   .document("/users/{userId}")
   .onUpdate(change => {
@@ -130,6 +133,7 @@ exports.onUserImageChange = functions.firestore
         });
     } else return true;
   });
+
 exports.onShoutDelete = functions.firestore
   .document("/shouts/{shoutId}")
   .onDelete((snapshot, context) => {
