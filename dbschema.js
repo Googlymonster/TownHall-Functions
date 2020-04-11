@@ -1,4 +1,16 @@
 let db = {
+  users: [
+    {
+      userId: '',
+      email: '',
+      handle: '',
+      createdAt: '',
+      imageUrl: '',
+      bio: 'Hello',
+      website: '',
+      location: ''
+    }
+  ],
   shouts: [
     {
       userHandle: "user",
@@ -22,11 +34,11 @@ const userDetails = {
   },
   likes: [
     {
-      userHandle: "user",
+      userHandle: "ustester",
       shoutId: ""
     },
     {
-      userHandle: "",
+      userHandle: "test",
       shoutId: ""
     }
   ]

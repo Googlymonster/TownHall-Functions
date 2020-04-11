@@ -3,6 +3,11 @@ const express = require("express");
 const app = express();
 const FBAuth = require("./util/fbAuth");
 
+const cors = require("cors");
+app.use(cors());
+
+const { db } = require("./util/admin");
+
 const {
   getAllShouts,
   postOneShout,
@@ -66,6 +71,7 @@ exports.createNotificationOnLike = functions.firestore
       })
       .catch(err => console.error(err));
   });
+
 exports.deleteNotificationOnUnlike = functions.firestore
   .document("likes/{id}")
   .onDelete(snapshot => {
