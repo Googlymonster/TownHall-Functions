@@ -6,7 +6,7 @@ module.exports = (req, res, next) => {
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer ")
   ) {
-    idToken = request.headers.authorization.split("Bearer ")[1];
+    idToken = req.headers.authorization.split("Bearer ")[1];
   } else {
     console.error("No token found");
     return res.status(403).json({ error: "Unauthorized" });

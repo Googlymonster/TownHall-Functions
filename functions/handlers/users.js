@@ -9,17 +9,17 @@ const {
 } = require("../util/validators");
 
 // Sign up new user
-exports.signUp = (request, response) => {
+exports.signUp = (req, res) => {
   const newUser = {
-    email: request.body.email,
-    password: request.body.password,
-    confirmPassword: request.body.confirmPassword,
-    handle: request.body.handle
+    email: req.body.email,
+    password: req.body.password,
+    confirmPassword: req.body.confirmPassword,
+    handle: req.body.handle
   };
 
   const { valid, errors } = validateSignupData(newUser);
 
-  if (!valid) return response.status(400).json(errors);
+  if (!valid) return res.status(400).json(errors);
 
   const noImg = "no-img.png";
 
@@ -28,9 +28,7 @@ exports.signUp = (request, response) => {
     .get()
     .then(doc => {
       if (doc.exists) {
-        return response
-          .status(400)
-          .json({ handle: "this handle is already taken" });
+        return res.status(400).json({ handle: "this handle is already taken" });
       } else {
         return firebase
           .auth()
@@ -53,14 +51,14 @@ exports.signUp = (request, response) => {
       return db.doc(`/users/${newUser.handle}`).set(userCredentials);
     })
     .then(() => {
-      return response.status(201).json({ token });
+      return res.status(201).json({ token });
     })
     .catch(err => {
       console.error(err);
       if (err.code === "auth/email-already-in-use") {
-        return response.status(400).json({ email: "Email is already in use" });
+        return res.status(400).json({ email: "Email is already in use" });
       } else {
-        return response
+        return res
           .status(500)
           .json({ general: "Something went wrong, please try again" });
       }
@@ -68,15 +66,15 @@ exports.signUp = (request, response) => {
 };
 
 // Login user
-exports.login = (request, response) => {
+exports.login = (req, res) => {
   const user = {
-    email: request.body.email,
-    password: request.body.password
+    email: req.body.email,
+    password: req.body.password
   };
 
   const { valid, errors } = validateLoginData(user);
 
-  if (!valid) return response.status(400).json(errors);
+  if (!valid) return res.status(400).json(errors);
 
   firebase
     .auth()
@@ -85,11 +83,11 @@ exports.login = (request, response) => {
       return data.user.getIdToken();
     })
     .then(token => {
-      return response.json({ token });
+      return res.json({ token });
     })
     .catch(err => {
       console.error(err);
-      return response
+      return res
         .status(403)
         .json({ general: "Wrong credentials, please try again" });
     });
