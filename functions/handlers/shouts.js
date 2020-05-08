@@ -4,21 +4,22 @@ exports.getAllShouts = (request, response) => {
   db.collection("shouts")
     .orderBy("createdAt", "desc")
     .get()
-    .then(data => {
+    .then((data) => {
       let shouts = [];
-      data.forEach(doc => {
+      data.forEach((doc) => {
         shouts.push({
           shoutId: doc.id,
           body: doc.data().body,
           userHandle: doc.data().userHandle,
           createdAt: doc.data().createdAt,
           commentCount: doc.data().commentCount,
-          likeCount: doc.data().likeCount
+          likeCount: doc.data().likeCount,
+          userImage: doc.data().userImage,
         });
       });
       return response.json(shouts);
     })
-    .catch(error => {
+    .catch((error) => {
       console.error(error);
       response.status(500).json({ error: error.code });
     });
@@ -31,17 +32,20 @@ exports.postOneShout = (request, response) => {
 
   const newShout = {
     body: request.body.body,
-    userHandle: request.body.handle,
-    createdAt: new Date().toISOString()
+    userHandle: request.user.handle,
+    userImage: request.user.imageUrl,
+    createdAt: new Date().toISOString(),
+    likeCount: 0,
+    commentCount: 0,
   };
   db.collection("shouts")
     .add(newShout)
-    .then(doc => {
+    .then((doc) => {
       const resShout = newShout;
       resShout.shoutId = doc.id;
       response.json(resShout);
     })
-    .catch(err => {
+    .catch((err) => {
       response.status(500).json({ error: "something went wrong" });
       console.error(err);
     });
@@ -51,9 +55,9 @@ exports.getShout = (req, res) => {
   let shoutData = {};
   db.doc(`/shouts/${req.params.shoutId}`)
     .get()
-    .then(doc => {
+    .then((doc) => {
       if (!doc.exists) {
-        return res.status(400).json({ error: "Shout not found" });
+        return res.status(404).json({ error: "Shout not found" });
       }
       shoutData = doc.data();
       shoutData.shoutId = doc.id;
@@ -63,14 +67,14 @@ exports.getShout = (req, res) => {
         .where("shoutId", "==", req.params.shoutId)
         .get();
     })
-    .then(data => {
+    .then((data) => {
       shoutData.comments = [];
-      data.forEach(doc => {
+      data.forEach((doc) => {
         shoutData.comments.push(doc.data());
       });
       return res.json(shoutData);
     })
-    .catch(err => {
+    .catch((err) => {
       console.error(err);
       res.status(500).json({ error: err.code });
     });
@@ -84,22 +88,25 @@ exports.commentOnShout = (req, res) => {
     createdAt: new Date().toISOString(),
     shoutId: req.params.shoutId,
     userHandle: req.user.handle,
-    userImage: req.user.imageUrl
+    userImage: req.user.imageUrl,
   };
   console.log(newComment);
 
   db.doc(`/shouts/${req.params.shoutId}`)
     .get()
-    .then(doc => {
+    .then((doc) => {
       if (!doc.exists) {
         return res.status(404).json({ error: "Shout not found" });
       }
       return doc.ref.update({ commentCount: doc.data().commentCount + 1 });
     })
     .then(() => {
+      return db.collection("comments").add(newComment);
+    })
+    .then(() => {
       res.json(newComment);
     })
-    .catch(err => {
+    .catch((err) => {
       console.log(err);
       res.status(500).json({ error: "Something went wrong" });
     });
@@ -118,16 +125,16 @@ exports.likeShout = (res, req) => {
 
   shoutDocument
     .get()
-    .then(doc => {
+    .then((doc) => {
       if (doc.exists) {
         shoutData = doc.data();
         shoutData.shoutId = doc.id;
         return likeDocument.get();
       } else {
-        return res.status(404).json({ error: "Scream not found" });
+        return res.status(404).json({ error: "Shout not found" });
       }
     })
-    .then(data => {
+    .then((data) => {
       if (data.empty) {
         return db
           .collection("likes")
@@ -140,10 +147,10 @@ exports.likeShout = (res, req) => {
             return res.json(shoutData);
           });
       } else {
-        return res.status(400).json({ error: "Scream already liked" });
+        return res.status(400).json({ error: "Shout already liked" });
       }
     })
-    .catch(err => {
+    .catch((err) => {
       console.error(err);
       res.status(500).json({ error: err.code });
     });
@@ -162,7 +169,7 @@ exports.unlikeShout = (req, res) => {
 
   shoutDocument
     .get()
-    .then(doc => {
+    .then((doc) => {
       if (doc.exists) {
         shoutData = doc.data();
         shoutData.shoutId = doc.id;
@@ -171,7 +178,7 @@ exports.unlikeShout = (req, res) => {
         return res.status(404).json({ error: "Shout not found" });
       }
     })
-    .then(data => {
+    .then((data) => {
       if (data.empty) {
         return res.status(400).json({ error: "Shout not liked" });
       } else {
@@ -187,7 +194,7 @@ exports.unlikeShout = (req, res) => {
           });
       }
     })
-    .catch(err => {
+    .catch((err) => {
       console.error(err);
       res.status(500).json({ error: err.code });
     });
@@ -197,7 +204,7 @@ exports.deleteShout = (req, res) => {
   const document = db.doc(`/shouts/${req.params.shoutId}`);
   document
     .get()
-    .then(doc => {
+    .then((doc) => {
       if (!doc.exists) {
         return res.status(404).json({ error: "Shout not found" });
       }
@@ -210,7 +217,7 @@ exports.deleteShout = (req, res) => {
     .then(() => {
       res.json({ message: "Shout deleted successfully" });
     })
-    .catch(err => {
+    .catch((err) => {
       console.error(err);
       return res.status(500).json({ error: err.code });
     });
