@@ -135,7 +135,7 @@ exports.getUserDetails = (req, res) => {
           userImage: doc.data().userImage,
           likeCount: doc.data().likeCount,
           commentCount: doc.data().commentCount,
-          screamId: doc.id,
+          shoutId: doc.id,
         });
       });
       return res.json(userData);
